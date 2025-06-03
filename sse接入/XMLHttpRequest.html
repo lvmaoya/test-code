@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      function setupSSEWithXHR(url, callback) {
+        const xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
+
+        // 设置必要的头部
+        xhr.setRequestHeader("Accept", "text/event-stream");
+        let buffer = "";
+        xhr.onprogress = function () {
+          // 处理接收到的数据
+          const newData = xhr.responseText.substring(buffer.length);
+          buffer = xhr.responseText;
+          // 模拟 EventSource 的消息处理
+          const lines = newData.split("\n");
+          for (const line of lines) {
+            if (line.startsWith("data:")) {
+              const data = line.substring(5).trim();
+              callback(data);
+            }
+          }
+        };
+
+        xhr.onerror = function () {
+          console.error("SSE连接出错");
+        };
+        xhr.send();
+        return {
+          close: function () {
+            xhr.abort();
+          },
+        };
+      }
+
+      // 使用示例
+      const sseConnection = setupSSEWithXHR(
+        "http://localhost:3000/events",
+        function (data) {
+          console.log("收到数据:", data);
+        }
+      );
+      // 关闭连接
+      // sseConnection.close();
+    </script>
+  </body>
+</html>

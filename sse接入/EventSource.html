@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      const eventSource = new EventSource("http://localhost:3000/events");
+
+      eventSource.onmessage = function (e) {
+        const data = JSON.parse(e.data);
+        console.log("收到消息:", data);
+      };
+
+      eventSource.addEventListener("statusUpdate", function (e) {
+        console.log("状态更新:", e.data);
+      });
+
+      eventSource.onerror = function () {
+        console.log("连接错误，尝试重连...");
+      };
+    </script>
+  </body>
+</html>
