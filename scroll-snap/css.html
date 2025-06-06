@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<style>
+  html, body { margin: 0; height: 100%; }
+  .scroll-container {
+    height: 100vh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory; /* 关键属性 */
+  }
+  .page {
+    height: 100vh;
+    scroll-snap-align: start; /* 吸附点 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3rem;
+  }
+  .page:nth-child(1) { background: #FF6B6B; }
+  .page:nth-child(2) { background: #4ECDC4; }
+  .page:nth-child(3) { background: #45B7D1; }
+</style>
+
+<div class="scroll-container">
+  <section class="page">Page 1</section>
+  <section class="page">Page 2</section>
+  <section class="page">Page 3</section>
+</div>
