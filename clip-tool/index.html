@@ -62,7 +62,7 @@
       margin: 0 auto;
       display: flex;
       flex-wrap: wrap;
-      gap: 48px; /* 间距更大 */
+      gap: 48px;
       justify-content: center;
     }
 
@@ -120,7 +120,7 @@
       margin: 50px auto 0;
       font-size: 14px;
       color: #666;
-      text-align: left; /* 文案左对齐 */
+      text-align: left;
       line-height: 1.6;
     }
 
@@ -140,10 +140,9 @@
 
 <h2>图片裁剪工具✂️</h2>
 
-<!-- 控制区 -->
 <div class="controls">
   <button id="selectButton">选择图片</button>
-  <input type="file" id="inputImage" accept="image/*">
+  <input type="file" id="inputImage">
   <select id="aspectRatio">
     <option value="NaN">自由比例</option>
     <option value="1" selected>1:1 (正方形)</option>
@@ -160,7 +159,6 @@
   <button id="downloadButton">下载图片</button>
 </div>
 
-<!-- 裁剪和预览区域 -->
 <div class="main">
   <div class="image-container" id="imageWrapper">
     <span class="placeholder">工作区</span>
@@ -176,7 +174,6 @@
   </div>
 </div>
 
-<!-- 底部文件名和说明 -->
 <div class="footer">
   <div id="fileNameDisplay">未选择文件</div>
   <p>使用说明：</p>
@@ -186,20 +183,22 @@
   <p>4. 点击“下载图片”保存到本地。</p>
 </div>
 
-<!-- 引入库 -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
 <script>
   let cropper;
+  let originalFileName = '';
+  let originalFileType = '';
 
-  $('#selectButton').on('click', function () {
-    $('#inputImage').click();
-  });
+  $('#selectButton').on('click', () => $('#inputImage').click());
 
   $('#inputImage').on('change', function (e) {
     const file = e.target.files[0];
     if (!file) return;
+
+    originalFileName = file.name.replace(/\.[^/.]+$/, "");
+    originalFileType = file.type;
 
     $('#fileNameDisplay').text(`已选择文件：${file.name}`);
 
@@ -240,8 +239,31 @@
     const canvas = document.getElementById('resultCanvas');
     if (canvas) {
       const link = document.createElement('a');
-      link.href = canvas.toDataURL('image/png');
-      link.download = 'cropped-image.png';
+
+      let extension = '';
+      let mimeType = 'image/png';
+      let quality = 0.9;
+
+      if (originalFileType.includes('jpeg') || originalFileType.includes('jpg')) {
+        mimeType = 'image/jpeg';
+        extension = '.jpg';
+      } else if (originalFileType.includes('png')) {
+        mimeType = 'image/png';
+        extension = '.png';
+        quality = undefined; // PNG 不需要压缩参数
+      } else if (originalFileType.includes('webp')) {
+        mimeType = 'image/webp';
+        extension = '.webp';
+      } else {
+        extension = '.png';
+      }
+
+      const dataURL = quality
+        ? canvas.toDataURL(mimeType, quality)
+        : canvas.toDataURL(mimeType);
+
+      link.href = dataURL;
+      link.download = `${originalFileName}_clipped${extension}`;
       link.click();
     } else {
       alert('请先裁剪图片！');
