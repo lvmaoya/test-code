@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>经典视差滚动效果</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* 视差容器 */
+        .parallax-wrapper {
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            perspective: 1px;
+        }
+
+        /* 视差组 */
+        .parallax-group {
+            position: relative;
+            height: 100vh;
+            transform-style: preserve-3d;
+        }
+
+        /* 视差层基础样式 */
+        .parallax-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        /* 远景层 - 山脉背景 */
+        .parallax-back {
+            transform: translateZ(-1px) scale(2);
+            background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 70%, #228B22 100%);
+        }
+
+        .mountains {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 60%;
+            background: linear-gradient(45deg, #8B4513, #A0522D, #CD853F);
+            clip-path: polygon(0% 100%, 15% 60%, 25% 80%, 35% 40%, 50% 70%, 65% 30%, 80% 60%, 90% 45%, 100% 100%);
+        }
+
+        /* 中景层 - 云朵 */
+        .parallax-mid {
+            transform: translateZ(-0.5px) scale(1.5);
+        }
+
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50px;
+            opacity: 0.7;
+        }
+
+        .cloud:before,
+        .cloud:after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50px;
+        }
+
+        .cloud1 {
+            width: 100px;
+            height: 40px;
+            top: 20%;
+            left: 10%;
+            animation: float 20s infinite linear;
+        }
+
+        .cloud1:before {
+            width: 50px;
+            height: 50px;
+            top: -25px;
+            left: 10px;
+        }
+
+        .cloud1:after {
+            width: 60px;
+            height: 40px;
+            top: -15px;
+            right: 10px;
+        }
+
+        .cloud2 {
+            width: 80px;
+            height: 30px;
+            top: 30%;
+            right: 20%;
+            animation: float 25s infinite linear reverse;
+        }
+
+        .cloud2:before {
+            width: 40px;
+            height: 40px;
+            top: -20px;
+            left: 15px;
+        }
+
+        .cloud2:after {
+            width: 50px;
+            height: 30px;
+            top: -10px;
+            right: 15px;
+        }
+
+        .cloud3 {
+            width: 120px;
+            height: 50px;
+            top: 15%;
+            left: 60%;
+            animation: float 30s infinite linear;
+        }
+
+        .cloud3:before {
+            width: 60px;
+            height: 60px;
+            top: -30px;
+            left: 20px;
+        }
+
+        .cloud3:after {
+            width: 70px;
+            height: 50px;
+            top: -20px;
+            right: 20px;
+        }
+
+        @keyframes float {
+            0% { transform: translateX(-100px); }
+            100% { transform: translateX(calc(100vw + 100px)); }
+        }
+
+        /* 前景层 - 内容 */
+        .parallax-front {
+            transform: translateZ(0);
+            background: rgba(255, 255, 255, 0.9);
+            margin-top: 60vh;
+            padding: 50px;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .content h1 {
+            font-size: 3rem;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .content p {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            color: #34495e;
+            margin-bottom: 20px;
+        }
+
+        /* 第二个视差组 */
+        .parallax-group2 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .parallax-group2 .parallax-front {
+            background: rgba(255, 255, 255, 0.95);
+            margin-top: 40vh;
+        }
+
+        /* 装饰元素 */
+        .sun {
+            position: absolute;
+            top: 10%;
+            right: 15%;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #FFD700, #FFA500);
+            border-radius: 50%;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* 鸟群 */
+        .birds {
+            position: absolute;
+            top: 25%;
+            left: 30%;
+        }
+
+        .bird {
+            width: 20px;
+            height: 2px;
+            background: #333;
+            position: relative;
+            margin: 5px;
+            animation: fly 15s infinite linear;
+        }
+
+        .bird:before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 2px;
+            background: #333;
+            transform: rotate(20deg);
+            top: -1px;
+            left: -5px;
+        }
+
+        .bird:after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 2px;
+            background: #333;
+            transform: rotate(-20deg);
+            top: -1px;
+            right: -5px;
+        }
+
+        @keyframes fly {
+            0% { transform: translateX(-50px) translateY(0px); }
+            25% { transform: translateX(200px) translateY(-10px); }
+            50% { transform: translateX(400px) translateY(5px); }
+            75% { transform: translateX(600px) translateY(-5px); }
+            100% { transform: translateX(800px) translateY(0px); }
+        }
+
+        /* 滚动提示 */
+        .scroll-hint {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            text-align: center;
+            animation: bounce 2s infinite;
+        }
+
+        .scroll-hint::after {
+            content: '↓';
+            display: block;
+            font-size: 2rem;
+            margin-top: 10px;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-10px); }
+            60% { transform: translateX(-50%) translateY(-5px); }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .content h1 {
+                font-size: 2rem;
+            }
+            
+            .content p {
+                font-size: 1rem;
+            }
+            
+            .parallax-front {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="parallax-wrapper">
+        <!-- 第一个视差组 -->
+        <div class="parallax-group">
+            <!-- 远景层 - 山脉和天空 -->
+            <div class="parallax-layer parallax-back">
+                <div class="mountains"></div>
+                <div class="sun"></div>
+                <div class="birds">
+                    <div class="bird"></div>
+                    <div class="bird" style="margin-left: 30px; animation-delay: 1s;"></div>
+                    <div class="bird" style="margin-left: 60px; animation-delay: 2s;"></div>
+                </div>
+            </div>
+            
+            <!-- 中景层 - 云朵 -->
+            <div class="parallax-layer parallax-mid">
+                <div class="cloud cloud1"></div>
+                <div class="cloud cloud2"></div>
+                <div class="cloud cloud3"></div>
+            </div>
+            
+            <!-- 前景层 - 内容 -->
+            <div class="parallax-layer parallax-front">
+                <div class="content">
+                    <h1>视差滚动效果</h1>
+                    <p>这是一个经典的视差滚动效果演示。背景中的山脉移动最慢，云朵以中等速度飘动，而这段文字以正常速度滚动。</p>
+                    <p>视差效果通过让不同层以不同速度移动来创造深度感，就像我们在现实世界中观察远近不同物体时的感受一样。</p>
+                    <p>这种技术广泛应用于现代网页设计中，能够创造出引人入胜的视觉体验。</p>
+                </div>
+            </div>
+            
+            <div class="scroll-hint">
+                继续滚动探索更多
+            </div>
+        </div>
+        
+        <!-- 第二个视差组 -->
+        <div class="parallax-group parallax-group2">
+            <div class="parallax-layer parallax-back">
+                <!-- 星空背景 -->
+                <div style="background: radial-gradient(2px 2px at 20px 30px, #eee, transparent),
+                           radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,.5), transparent),
+                           radial-gradient(1px 1px at 90px 40px, #fff, transparent),
+                           radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,.5), transparent),
+                           radial-gradient(2px 2px at 160px 30px, #ddd, transparent);
+                           background-repeat: repeat;
+                           background-size: 200px 100px;
+                           width: 100%; height: 100%;"></div>
+            </div>
+            
+            <div class="parallax-layer parallax-front">
+                <div class="content">
+                    <h1>技术实现原理</h1>
+                    <p><strong>CSS Transform:</strong> 使用 translateZ() 和 scale() 创建不同的视差层次。</p>
+                    <p><strong>Perspective:</strong> 通过设置透视距离建立3D空间感。</p>
+                    <p><strong>Transform-style:</strong> preserve-3d 保持3D变换效果。</p>
+                    <p>这个案例展示了纯CSS实现的视差效果，无需JavaScript即可创造出流畅的视觉体验。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 添加一些交互效果
+        document.addEventListener('DOMContentLoaded', function() {
+            const wrapper = document.querySelector('.parallax-wrapper');
+            const scrollHint = document.querySelector('.scroll-hint');
+            
+            // 滚动时隐藏提示
+            wrapper.addEventListener('scroll', function() {
+                if (wrapper.scrollTop > 100) {
+                    scrollHint.style.opacity = '0';
+                } else {
+                    scrollHint.style.opacity = '1';
+                }
+            });
+            
+            // 检测用户偏好设置
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                // 为运动敏感用户禁用动画
+                document.querySelectorAll('*').forEach(el => {
+                    el.style.animation = 'none';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Firewatch Style Parallax – 还原头部效果</title>
+  <style>
+    /* ===== Reset ===== */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, PingFang SC, Helvetica, Arial, sans-serif; overflow-x: hidden; background:#ffaf1b; }
+
+    /* ===== 结构与高度（与原站相近） ===== */
+    #page { position: relative; }
+    .keyart, .keyart_layer { height: 1000px; } /* 关键：容器高度与层高度保持一致 */
+    .keyart { position: relative; }
+
+    /* 每一层的通用样式（与截图一致） */
+    .keyart_layer {
+      width: 100%;
+      position: absolute; /* 默认 absolute */
+      left: 0; bottom: 0;
+      background-position: bottom center; /* 与原站一致 */
+      background-size: auto 1038px;       /* 与原站一致，高度略大于容器 */
+      background-repeat: repeat-x;        /* 与原站一致：横向平铺 */
+    }
+    .keyart_layer.parallax { position: fixed; will-change: transform; }
+
+    /* 顶部渐变天空（可放在第0层同位，也可作为 body 背景） */
+    #keyart-0 { background-color: #ffaf1b; }
+
+    /* 叠层的 z-index 顺序，越前景越大 */
+    #keyart-0 { z-index: 1; }
+    #keyart-1 { z-index: 2; }
+    #keyart-2 { z-index: 3; }
+    #keyart-3 { z-index: 4; }
+    #keyart-4 { z-index: 5; }
+    #keyart-5 { z-index: 6; }
+    #keyart-6 { z-index: 7; }
+    #keyart-7 { z-index: 8; }
+    #keyart-scrim { z-index: 9; }
+    #keyart-8 { z-index: 10; }
+
+    /* Scrim：顶部渐隐遮罩（原站有） */
+    #keyart-scrim {
+      position: fixed;
+      left: 0; right: 0; bottom: 0; height: 1000px;
+      /* background: linear-gradient(to bottom, rgba(0,0,0,.25), rgba(0,0,0,0)); */
+      pointer-events: none;
+    }
+
+    /* ===== 示例：本地资源占位路径（请用你自己的切图替换） =====
+       与原站命名方式保持一致，确保 url 正确即可。若没有资源，会看到纯色/渐变背景。 */
+    #keyart-0 { background-image: url(https://www.firewatchgame.com/images/parallax/parallax0@2x.png); }
+    #keyart-1 { background-image: url(https://www.firewatchgame.com/images/parallax/parallax1@2x.png); }
+    #keyart-2 { background-image: url(https://www.firewatchgame.com/images/parallax/parallax2@2x.png); }
+    #keyart-3 { background-image: url(https://www.firewatchgame.com/images/parallax/parallax3@2x.png); }
+    #keyart-4 { background-image: url(https://www.firewatchgame.com/images/parallax/parallax4@2x.png); }
+    #keyart-5 { background-image: url(https://www.firewatchgame.com/images/parallax/parallax5@2x.png); }
+    #keyart-6 { background-image: url(https://www.firewatchgame.com/images/parallax/parallax6@2x.png); }
+    #keyart-7 { background-image: url(https://www.firewatchgame.com/images/parallax/parallax7@2x.png); }
+    #keyart-8 { background-image: url(https://www.firewatchgame.com/images/parallax/parallax8@2x.png); }
+
+    /* ===== 主体内容 ===== */
+    #maincontent { background:#210002; color:#e8ecff; }
+    .section { min-height: 80vh; padding: 64px 20px; display: grid; place-items: center; }
+
+    /* ===== 移动端优化：禁用视差，避免抖动 ===== */
+    @media (max-width: 768px) {
+      .keyart_layer.parallax { position: absolute; transform: none !important; }
+      #keyart-scrim { position: absolute; }
+    }
+  </style>
+</head>
+<body>
+  <div id="page">
+    <div class="keyart" id="parallax">
+      <!-- 与原站结构一致：0..7 + scrim + 8 -->
+      <div class="keyart_layer parallax" id="keyart-0" data-speed="2"></div>
+      <div class="keyart_layer parallax" id="keyart-1" data-speed="5"></div>
+      <div class="keyart_layer parallax" id="keyart-2" data-speed="11"></div>
+      <div class="keyart_layer parallax" id="keyart-3" data-speed="16"></div>
+      <div class="keyart_layer parallax" id="keyart-4" data-speed="26"></div>
+      <div class="keyart_layer parallax" id="keyart-5" data-speed="36"></div>
+      <div class="keyart_layer parallax" id="keyart-6" data-speed="49"></div>
+      <div class="keyart_layer parallax" id="keyart-7" data-speed="69"></div>
+      <div class="keyart_layer" id="keyart-scrim"></div>
+      <div class="keyart_layer parallax" id="keyart-8" data-speed="100"></div>
+    </div>
+
+    <div id="maincontent">
+      <section class="section"><h2>滚动查看效果</h2></section>
+      <section class="section"><p>替换 ./images/parallax/parallax{0..8}.png 为你的素材</p></section>
+      <section class="section"><p>速度值与层级可随意调整</p></section>
+    </div>
+  </div>
+
+  <script>
+    // ===== Firewatch 风格的视差计算 =====
+    (function(){
+      const layers = Array.from(document.querySelectorAll('.keyart_layer.parallax'));
+      const container = document.getElementById('parallax');
+
+      let useParallax = window.innerWidth > 768 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+
+      function onScroll(){
+        if (!useParallax) return;
+        const y = window.scrollY || window.pageYOffset;
+        const h = container.offsetHeight;          // 1000
+        const progress = clamp(y / h, 0, 1);       // 0..1
+
+        layers.forEach(el => {
+          const speed = parseFloat(el.getAttribute('data-speed')) || 0; // 2..100
+          // 原站思路：位移与滚动量成比例，使用百分比 speed/100 做缩放
+          // 下面以容器高度为基准映射，确保 100 时刚好位移一个容器高
+          const offset = - y * (speed / 100);
+          el.style.transform = `translate3d(0, ${offset.toFixed(2)}px, 0)`;
+        });
+      }
+
+      function onResize(){
+        const newUse = window.innerWidth > 768 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (newUse !== useParallax){
+          useParallax = newUse;
+          if (!useParallax){
+            layers.forEach(el => el.style.transform = 'none');
+          } else {
+            onScroll();
+          }
+        }
+      }
+
+      onScroll();
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onResize);
+    })();
+  </script>
+</body>
+</html>
